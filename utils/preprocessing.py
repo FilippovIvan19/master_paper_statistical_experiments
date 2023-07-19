@@ -7,6 +7,10 @@ from utils.constants import MONTH_IN_SEC
 from utils.timing import time_measure
 
 
+def datetime_index_to_ints(dates: pd.DatetimeIndex):
+    return dates.astype(np.int64) // 10 ** 9
+
+
 def clear_nulls(data: pd.Series) -> pd.Series:
     new_data = pd.to_numeric(data, errors='coerce')
     new_data.replace([np.inf, -np.inf], np.nan, inplace=True)
@@ -16,7 +20,7 @@ def clear_nulls(data: pd.Series) -> pd.Series:
 
 def get_stable_periods(data: pd.Series, duration: int = MONTH_IN_SEC,
                        max_gap: int = 5) -> list[slice]:
-    int_dates = data.index.astype(np.int64) // 10 ** 9
+    int_dates = datetime_index_to_ints(data.index)
     with time_measure(f'getting stable periods'):
         stable_period_start_indexes = [0]
         stable_period_end_indexes = []
@@ -45,7 +49,7 @@ def get_stable_periods(data: pd.Series, duration: int = MONTH_IN_SEC,
 
 def interpolate_missed_data(data: pd.Series, duration: int) -> pd.Series:
     with time_measure(f'interpolation'):
-        int_dates = data.index.astype(np.int64) // 10 ** 9
+        int_dates = datetime_index_to_ints(data.index)
         all_dates = np.arange(int_dates[0], int_dates[-1] + 1)
         interpolation_func = CubicSpline(int_dates, data.values)
         formatted_dates = pd.to_datetime(all_dates, unit='s', utc=True).tz_convert(tz=data.index[0].tz)
@@ -74,7 +78,7 @@ def generate_async_signals(data: pd.Series, resource_delta: float) -> pd.Series:
         signal_count = int(data.values[-1] // resource_delta) + 1
         signals = np.array([resource_delta * i for i in range(signal_count)])
 
-        int_dates = data.index.astype(np.int64) // 10 ** 9
+        int_dates = datetime_index_to_ints(data.index)
         interpolation_func = PchipInterpolator(data.values, int_dates)
         new_dates = interpolation_func(signals)
         formatted_dates = pd.to_datetime(new_dates, unit='s', utc=True).tz_convert(tz=data.index[0].tz)
