@@ -14,6 +14,7 @@ DATASET_NAMES = ['redd', 'ideal']
 ARCHIVES_PATH = '../data/unpacked/archive_storage/'
 NILMTK_PATH = '../data/nilmtk_storage/'
 PROCESSED_PATH = '../data/processed_data_storage/'
+PERIODS_PATH = '../data/periods_storage/'
 
 
 class DatasetType(enum.Enum):
@@ -32,3 +33,6 @@ class DatasetType(enum.Enum):
 
     def processed_path(self) -> str:
         return PROCESSED_PATH + self.path_str + '.h5'
+
+    def periods_path(self) -> str:
+        return PERIODS_PATH + self.path_str + '.h5'
