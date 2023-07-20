@@ -2,7 +2,7 @@ import numpy as np
 from nilmtk import STATS_CACHE
 
 from utils.constants import DatasetType, DAY_IN_SEC
-from utils.data_reading import process_data, read_processed_data, \
+from utils.data_reading import clean_and_store_data, read_cleaned_data, \
     convert_to_nilmtk_format, store_processed_stable_periods, \
     get_full_keys_of_stable_periods, read_stable_periods
 from utils.preprocessing import generate_sync_signals, get_stable_periods, \
@@ -16,8 +16,8 @@ DURATION = DAY_IN_SEC*30
 MAX_GAP = 300
 
 # convert_to_nilmtk_format(DatasetType.REDD)
-# process_data(DatasetType.IDEAL)
-ideal = read_processed_data(DatasetType.IDEAL)
+# clean_and_store_data(DatasetType.IDEAL)
+ideal = read_cleaned_data(DatasetType.IDEAL)
 
 key0, data0 = next(iter(ideal.items()))
 periods = get_stable_periods(data0, duration=DURATION, max_gap=MAX_GAP)
