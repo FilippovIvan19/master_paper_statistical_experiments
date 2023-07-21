@@ -48,7 +48,7 @@ def get_stable_periods(data: pd.Series, duration: int = MONTH_IN_SEC,
 
 
 def interpolate_missed_data(data: pd.Series, duration: int) -> pd.Series:
-    with time_measure(f'interpolation'):
+    with time_measure(f'interpolation', is_active=False):
         int_dates = datetime_index_to_ints(data.index)
         all_dates = np.arange(int_dates[0], int_dates[-1] + 1)
         interpolation_func = CubicSpline(int_dates, data.values)
@@ -59,11 +59,12 @@ def interpolate_missed_data(data: pd.Series, duration: int) -> pd.Series:
 
 
 def reformat_to_accumulated(data: pd.Series) -> pd.Series:
-    with time_measure(f'reformatting to accumulated'):
+    with time_measure(f'reformatting to accumulated', is_active=False):
         zero_date = data.index[0] - pd.Timedelta(seconds=1)
         indexes = pd.Index([zero_date]).append(data.index)
         values = data.values
-        values[values <= 0] = 1e-7
+        epsilon = sum(values) * 1e-12
+        values[values <= 0] = epsilon
         accumulated = np.concatenate(([0], values.cumsum()), axis=0)
         return pd.Series(accumulated, index=indexes)
 

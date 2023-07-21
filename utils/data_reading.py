@@ -4,7 +4,7 @@ from nilmtk import DataSet
 
 from utils.constants import DatasetType
 from utils.preprocessing import clear_nulls, interpolate_missed_data, \
-    reformat_to_accumulated
+    reformat_to_accumulated, get_stable_periods
 from utils.timing import time_measure
 
 
@@ -51,6 +51,16 @@ def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, p
             interpolated = interpolate_missed_data(stable_period, duration=duration)
             accumulated = reformat_to_accumulated(interpolated)
             data_file[build_full_key(key, duration, max_gap, i)] = accumulated
+        data_file.close()
+
+
+def process_stable_periods(ds: DatasetType, duration: int, max_gap: int) -> None:
+    with time_measure(f'processing stable periods for {ds.name} dataset'):
+        data_file = HDFStore(ds.cleaned_path(), mode='r')
+        for key in data_file.keys():
+            data = data_file[key]
+            periods = get_stable_periods(data, duration, max_gap)
+            store_processed_stable_periods(data, ds, key, periods, duration, max_gap)
         data_file.close()
 
 
