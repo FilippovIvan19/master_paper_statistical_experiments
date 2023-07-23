@@ -7,8 +7,12 @@ from utils.constants import MONTH_IN_SEC
 from utils.timing import time_measure
 
 
-def datetime_index_to_ints(dates: pd.DatetimeIndex):
+def datetime_index_to_ints(dates: pd.DatetimeIndex) -> pd.Index:
     return dates.astype(np.int64) // 10 ** 9
+
+
+def datetime_index_to_floats(dates: pd.DatetimeIndex) -> pd.Index:
+    return dates.astype(np.int64) / 10 ** 9
 
 
 def clear_nulls(data: pd.Series) -> pd.Series:
