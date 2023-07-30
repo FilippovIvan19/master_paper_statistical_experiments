@@ -5,7 +5,7 @@ from utils.constants import DatasetType, DAY_IN_SEC
 from utils.data_reading import clean_and_store_data, read_cleaned_data, \
     convert_to_nilmtk_format, store_processed_stable_periods, \
     get_full_keys_of_stable_periods, read_stable_periods
-from utils.informative_index import accumulated_distance
+from utils.informative_index import accumulated_distance, power_distance
 from utils.preprocessing import generate_sync_signals, get_stable_periods, \
     interpolate_missed_data, generate_async_signals, reformat_to_accumulated
 from utils.timing import time_measure
@@ -26,6 +26,7 @@ MAX_GAP = 300
 if __name__ == '__main__':
     full_keys = get_full_keys_of_stable_periods(DS)
     accumulated = read_stable_periods(DS, [full_keys[0]])[0]
+    power = read_stable_periods(DS, [full_keys[0]], power_mode=True)[0]
 
     sync_signals = generate_sync_signals(accumulated, 100)
     print('len(sync_signals)', len(sync_signals))
@@ -35,3 +36,4 @@ if __name__ == '__main__':
 
     # plot_sync_async_comparison(accumulated, sync_signals, async_signals)
     accumulated_distance(accumulated, async_signals, 4)
+    power_distance(power, sync_signals, 4)

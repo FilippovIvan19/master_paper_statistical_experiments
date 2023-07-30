@@ -15,6 +15,7 @@ ARCHIVES_PATH = '../data/unpacked/archive_storage/'
 NILMTK_PATH = '../data/nilmtk_storage/'
 CLEANED_PATH = '../data/cleaned_data_storage/'
 PERIODS_PATH = '../data/periods_storage/'
+POWER_PERIODS_PATH = '../data/power_periods_storage/'
 
 
 class DatasetType(enum.Enum):
@@ -34,5 +35,7 @@ class DatasetType(enum.Enum):
     def cleaned_path(self) -> str:
         return CLEANED_PATH + self.path_str + '.h5'
 
-    def periods_path(self) -> str:
+    def periods_path(self, power_mode: bool = False) -> str:
+        if power_mode:
+            return POWER_PERIODS_PATH + self.path_str + '.h5'
         return PERIODS_PATH + self.path_str + '.h5'

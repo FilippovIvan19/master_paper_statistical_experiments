@@ -84,7 +84,7 @@ def generate_async_signals(data: pd.Series, resource_delta: float) -> pd.Series:
         signals = np.array([resource_delta * i for i in range(signal_count)])
 
         int_dates = datetime_index_to_ints(data.index)
-        interpolation_func = PchipInterpolator(data.values, int_dates)
+        interpolation_func = PchipInterpolator(data.values, int_dates.values)
         new_dates = interpolation_func(signals)
         formatted_dates = pd.to_datetime(new_dates, unit='s', utc=True).tz_convert(tz=data.index[0].tz)
         return pd.Series(signals, index=formatted_dates)
