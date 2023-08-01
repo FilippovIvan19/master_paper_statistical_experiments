@@ -78,9 +78,19 @@ def generate_sync_signals(data: pd.Series, time_delta: int) -> pd.Series:
         return data[::time_delta]
 
 
+def generate_sync_signals_by_point_count(data: pd.Series, signal_count: int) -> pd.Series:
+    sec = (data.index[-1] - data.index[0]).total_seconds()
+    return generate_sync_signals(data, int(sec) // signal_count)
+
+
 def generate_async_signals(data: pd.Series, resource_delta: float) -> pd.Series:
+    signal_count = int(data.values[-1] // resource_delta) + 1
+    return generate_async_signals_by_point_count(data, signal_count)
+
+
+def generate_async_signals_by_point_count(data: pd.Series, signal_count: int) -> pd.Series:
     with time_measure(f'generating async signals'):
-        signal_count = int(data.values[-1] // resource_delta) + 1
+        resource_delta = data.values[-1] / signal_count
         signals = np.array([resource_delta * i for i in range(signal_count)])
 
         int_dates = datetime_index_to_ints(data.index)
