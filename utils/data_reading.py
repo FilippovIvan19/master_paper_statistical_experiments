@@ -48,7 +48,7 @@ def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, p
         data_file = HDFStore(ds.periods_path(), mode='a', complevel=5)
         data_file_power = HDFStore(ds.periods_path(power_mode=True), mode='a', complevel=5)
         for i, p in enumerate(periods):
-            stable_period = data.iloc[periods[0]]
+            stable_period = data.iloc[p]
             interpolated = interpolate_missed_data(stable_period, duration=duration)
             accumulated = reformat_to_accumulated(interpolated)
             data_file[build_full_key(key, duration, max_gap, i)] = accumulated
