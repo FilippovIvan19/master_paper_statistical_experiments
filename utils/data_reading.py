@@ -2,7 +2,8 @@ import pandas as pd
 from pandas import HDFStore
 from nilmtk import DataSet
 
-from utils.constants import DatasetType
+from utils.constants import DatasetType, DURATION_MAX_GAP_PAIRS, FULL_KEY_PATTERN
+from utils.parallelizer import parallelize
 from utils.preprocessing import clear_nulls, interpolate_missed_data, \
     reformat_to_accumulated, get_stable_periods
 from utils.timing import time_measure
@@ -57,13 +58,18 @@ def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, p
         data_file_power.close()
 
 
-def process_stable_periods(ds: DatasetType, duration: int, max_gap: int) -> None:
-    with time_measure(f'processing stable periods for {ds.name} dataset', is_active=False):
+def process_stable_periods_task(data, ds, key, duration, max_gap) -> None:
+    periods = get_stable_periods(data, duration, max_gap)
+    store_processed_stable_periods(data, ds, key, periods, duration, max_gap)
+
+
+def process_stable_periods(ds: DatasetType, duration: int, max_gap: int, processes: int = 1) -> None:
+    with time_measure(f'processing stable periods for {ds.name} dataset'):
         data_file = HDFStore(ds.cleaned_path(), mode='r')
-        for key in data_file.keys():
-            data = data_file[key]
-            periods = get_stable_periods(data, duration, max_gap)
-            store_processed_stable_periods(data, ds, key, periods, duration, max_gap)
+        with parallelize(processes) as parallelizer:
+            for key in data_file.keys():
+                data = data_file[key]
+                parallelizer.apply_async(process_stable_periods_task, (data, ds, key, duration, max_gap))
         data_file.close()
 
 
