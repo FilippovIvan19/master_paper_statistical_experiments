@@ -25,7 +25,7 @@ def clear_nulls(data: pd.Series) -> pd.Series:
 def get_stable_periods(data: pd.Series, duration: int = MONTH_IN_SEC,
                        max_gap: int = 5) -> list[slice]:
     int_dates = datetime_index_to_ints(data.index)
-    with time_measure(f'getting stable periods'):
+    with time_measure(f'getting stable periods', is_active=False):
         stable_period_start_indexes = [0]
         stable_period_end_indexes = []
         deltas = [0] + [
@@ -74,24 +74,24 @@ def reformat_to_accumulated(data: pd.Series) -> pd.Series:
 
 
 def generate_sync_signals(data: pd.Series, time_delta: int) -> pd.Series:
-    with time_measure(f'generating sync signals'):
+    with time_measure(f'generating sync signals', is_active=False):
         return data[::time_delta]
 
 
-def generate_sync_signals_by_point_count(data: pd.Series, signal_count: int) -> pd.Series:
+def generate_sync_signals_by_point_count(data: pd.Series, point_count: int) -> pd.Series:
     sec = (data.index[-1] - data.index[0]).total_seconds()
-    return generate_sync_signals(data, int(sec) // signal_count)
+    return generate_sync_signals(data, int(sec) // point_count)
 
 
 def generate_async_signals(data: pd.Series, resource_delta: float) -> pd.Series:
-    signal_count = int(data.values[-1] // resource_delta) + 1
-    return generate_async_signals_by_point_count(data, signal_count)
+    point_count = int(data.values[-1] // resource_delta) + 1
+    return generate_async_signals_by_point_count(data, point_count)
 
 
-def generate_async_signals_by_point_count(data: pd.Series, signal_count: int) -> pd.Series:
-    with time_measure(f'generating async signals'):
-        resource_delta = data.values[-1] / signal_count
-        signals = np.array([resource_delta * i for i in range(signal_count)])
+def generate_async_signals_by_point_count(data: pd.Series, point_count: int) -> pd.Series:
+    with time_measure(f'generating async signals', is_active=False):
+        resource_delta = data.values[-1] / point_count
+        signals = np.array([resource_delta * i for i in range(point_count)])
 
         int_dates = datetime_index_to_ints(data.index)
         interpolation_func = PchipInterpolator(data.values, int_dates.values)

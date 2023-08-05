@@ -24,19 +24,19 @@ def calc_squared_coefs_range(interpolations, start, end):
         ]
 
 
-def integrate_squared_diff(piecewise_polynomials: PPoly, parallel: int = 1):
+def integrate_squared_diff(piecewise_polynomials: PPoly, processes: int = 1) -> float:
     point_count = len(piecewise_polynomials.x) - 2
 
-    if parallel == 1:
+    if processes == 1:
         squared_coefs = calc_squared_coefs_range(piecewise_polynomials, 0, point_count + 1)
         squared_coefs = np.stack(squared_coefs, axis=0)
     else:
-        chunk_size = point_count // parallel + 1
+        chunk_size = point_count // processes + 1
         arguments = [
             (piecewise_polynomials, i, min(i + chunk_size, point_count + 1))
             for i in range(0, point_count + 1, chunk_size)
         ]
-        with Pool(parallel) as pool:
+        with Pool(processes) as pool:
             squared_coefs_parts = pool.starmap(calc_squared_coefs_range, arguments)
         squared_coefs = np.concatenate(squared_coefs_parts, axis=0)
 
@@ -45,8 +45,8 @@ def integrate_squared_diff(piecewise_polynomials: PPoly, parallel: int = 1):
     return distance
 
 
-def accumulated_distance(original: pd.Series, generated: pd.Series, parallel: int = 1):
-    with time_measure(f'accumulated_distance'):
+def accumulated_distance(original: pd.Series, generated: pd.Series, processes: int = 1) -> float:
+    with time_measure(f'accumulated_distance', is_active=False):
         f_dates_orig = datetime_index_to_floats(original.index)
         f_dates_gen = datetime_index_to_floats(generated.index)
         united_dates = f_dates_orig.union(f_dates_gen)
@@ -64,13 +64,12 @@ def accumulated_distance(original: pd.Series, generated: pd.Series, parallel: in
         assert interpolations.c.shape[0] == 2, 'must be linear'
         assert interpolations.c.shape[1] == point_count + 1, 'interval count is wrong'
 
-        distance = integrate_squared_diff(interpolations, parallel)
-        print('distance', distance)
+        distance = integrate_squared_diff(interpolations, processes)
         return distance
 
 
-def power_distance(original_pow: pd.Series, generated_acc: pd.Series, parallel: int = 1):
-    with time_measure(f'power_distance'):
+def power_distance(original_pow: pd.Series, generated_acc: pd.Series, processes: int = 1) -> float:
+    with time_measure(f'power_distance', is_active=False):
         f_dates_orig = datetime_index_to_floats(original_pow.index)
         f_dates_gen = datetime_index_to_floats(generated_acc.index)
         united_dates = f_dates_orig.union(f_dates_gen)[1:]
@@ -94,7 +93,6 @@ def power_distance(original_pow: pd.Series, generated_acc: pd.Series, parallel: 
         coefs = diff[1:]
         interpolations = PPoly([coefs], xs)
 
-        distance = integrate_squared_diff(interpolations, parallel)
-        print('distance', distance)
+        distance = integrate_squared_diff(interpolations, processes)
         return distance
 
