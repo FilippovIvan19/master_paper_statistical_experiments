@@ -42,7 +42,7 @@ def integrate_squared_diff(piecewise_polynomials: PPoly, processes: int = 1) -> 
 
     squared_diffs = PPoly(squared_coefs.T, piecewise_polynomials.x)
     distance = squared_diffs.integrate(piecewise_polynomials.x[0], piecewise_polynomials.x[-1])
-    return distance
+    return distance.item()
 
 
 def accumulated_distance(original: pd.Series, generated: pd.Series, processes: int = 1) -> float:

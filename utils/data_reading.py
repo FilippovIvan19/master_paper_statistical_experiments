@@ -1,3 +1,4 @@
+from typing import Literal
 import pandas as pd
 from pandas import HDFStore
 from nilmtk import DataSet
@@ -40,12 +41,18 @@ def read_cleaned_data(ds: DatasetType) -> dict[str, pd.Series]:
         return data
 
 
-def build_full_key(key: str, duration: int, max_gap: int, index: int):
+def build_full_key(key: str, duration: int, max_gap: int, index: int | Literal['']) -> str:
     return f'{key}/dur_{duration}/gap_{max_gap}/n_{index}'
 
 
+def parse_full_key(full_key: str) -> (str, int, int, int):
+    m = FULL_KEY_PATTERN.match(full_key)
+    key, duration, max_gap, index = m.group(1, 2, 3, 4)
+    return key, int(duration), int(max_gap), int(index)
+
+
 def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, periods: list[slice], duration: int, max_gap: int) -> None:
-    with time_measure(f'storing stable periods of {ds.name}{key} with duration = {duration}s and max_gap = {max_gap}s'):
+    with time_measure(f'storing stable periods of {ds.name}{key} with duration = {duration}s and max_gap = {max_gap}s', is_active=False):
         data_file = HDFStore(ds.periods_path(), mode='a', complevel=5)
         data_file_power = HDFStore(ds.periods_path(power_mode=True), mode='a', complevel=5)
         for i, p in enumerate(periods):
@@ -78,7 +85,7 @@ def get_full_keys_of_stable_periods(ds: DatasetType, key: str | None = None, pow
     if key is None:
         keys = data_file.keys()
     else:
-        keys = [k for k in data_file.keys() if k.startswith(f'{key}/')]
+        keys = [k for k in data_file.keys() if key in k]
     data_file.close()
     return keys
 
@@ -91,3 +98,18 @@ def read_stable_periods(ds: DatasetType, full_keys: list[str], power_mode: bool 
             data.append(data_file[key])
         data_file.close()
         return data
+
+
+def read_stable_period(ds: DatasetType, full_key: str, power_mode: bool = False) -> pd.Series:
+    with time_measure(f'reading stable period of {ds.name}', is_active=False):
+        data_file = HDFStore(ds.periods_path(power_mode), mode='r')
+        data = data_file[full_key]
+        data_file.close()
+        return data
+
+
+def prepare_data_for_experiment(ds: DatasetType):
+    for (dur, gap) in DURATION_MAX_GAP_PAIRS:
+        process_stable_periods(ds, dur, gap)
+        print(ds, dur, gap)
+

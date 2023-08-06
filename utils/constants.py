@@ -1,4 +1,5 @@
 import enum
+import re
 from typing import Callable
 
 from nilmtk.dataset_converters import convert_redd
@@ -39,3 +40,53 @@ class DatasetType(enum.Enum):
         if power_mode:
             return POWER_PERIODS_PATH + self.path_str + '.h5'
         return PERIODS_PATH + self.path_str + '.h5'
+
+
+FULL_KEY_PATTERN = re.compile(r'/(\w+)/dur_(\w+)/gap_(\w+)/n_(\w+)')
+
+
+DURATION_MAX_GAP_PAIRS = [
+    (DAY_IN_SEC * 30, 300),
+    (DAY_IN_SEC * 20, 300),
+    (DAY_IN_SEC * 15, 300),
+    (DAY_IN_SEC * 10, 300),
+
+    (DAY_IN_SEC * 20, 180),
+    (DAY_IN_SEC * 15, 180),
+    (DAY_IN_SEC * 10, 180),
+
+    (DAY_IN_SEC * 15, 90),
+    (DAY_IN_SEC * 10, 90),
+    (DAY_IN_SEC * 5, 90),
+
+    (DAY_IN_SEC * 14, 60),
+    (DAY_IN_SEC * 10, 60),
+    (DAY_IN_SEC * 7, 60),
+    (DAY_IN_SEC * 5, 60),
+
+    (DAY_IN_SEC * 10, 30),
+    (DAY_IN_SEC * 7, 30),
+    (DAY_IN_SEC * 5, 30),
+    (DAY_IN_SEC * 3, 30),
+
+    (DAY_IN_SEC * 7, 15),
+    (DAY_IN_SEC * 5, 15),
+    (DAY_IN_SEC * 3, 15),
+
+    (DAY_IN_SEC * 5, 10),
+    (DAY_IN_SEC * 3, 10),
+    (DAY_IN_SEC, 10),
+
+    (DAY_IN_SEC * 5, 5),
+    (DAY_IN_SEC * 3, 5),
+    (DAY_IN_SEC, 5),
+
+    (DAY_IN_SEC * 5, 1),
+    (DAY_IN_SEC * 3, 1),
+    (DAY_IN_SEC, 1),
+]
+
+TIME_DELTAS = [
+    3, 5, 10, 15, 20, 30,
+    60, 120, 240, 600
+]
