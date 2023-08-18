@@ -53,8 +53,8 @@ def parse_full_key(full_key: str) -> (str, int, int, int):
 
 def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, periods: list[slice], duration: int, max_gap: int) -> None:
     with time_measure(f'storing stable periods of {ds.name}{key} with duration = {duration}s and max_gap = {max_gap}s', is_active=False):
-        data_file = HDFStore(ds.periods_path(), mode='a', complevel=5)
-        data_file_power = HDFStore(ds.periods_path(power_mode=True), mode='a', complevel=5)
+        data_file = HDFStore(ds.periods_path(), mode='a', complevel=9)
+        data_file_power = HDFStore(ds.periods_path(power_mode=True), mode='a', complevel=9)
         for i, p in enumerate(periods):
             stable_period = data.iloc[p]
             interpolated = interpolate_missed_data(stable_period, duration=duration)
@@ -65,18 +65,13 @@ def store_processed_stable_periods(data: pd.Series, ds: DatasetType, key: str, p
         data_file_power.close()
 
 
-def process_stable_periods_task(data, ds, key, duration, max_gap) -> None:
-    periods = get_stable_periods(data, duration, max_gap)
-    store_processed_stable_periods(data, ds, key, periods, duration, max_gap)
-
-
-def process_stable_periods(ds: DatasetType, duration: int, max_gap: int, processes: int = 1) -> None:
+def process_stable_periods(ds: DatasetType, duration: int, max_gap: int) -> None:
     with time_measure(f'processing stable periods for {ds.name} dataset'):
         data_file = HDFStore(ds.cleaned_path(), mode='r')
-        with parallelize(processes) as parallelizer:
-            for key in data_file.keys():
-                data = data_file[key]
-                parallelizer.apply_async(process_stable_periods_task, (data, ds, key, duration, max_gap))
+        for key in data_file.keys():
+            data = data_file[key]
+            periods = get_stable_periods(data, duration, max_gap)
+            store_processed_stable_periods(data, ds, key, periods, duration, max_gap)
         data_file.close()
 
 
