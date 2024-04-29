@@ -4,11 +4,14 @@ from typing import Callable
 
 from nilmtk.dataset_converters import convert_redd
 from utils.nilmtk_additional import convert_ideal
+# using utils.nilmtk_additional.convert_ideal requires nilmtk's metadata folder near with sensor_data folders
+# probably nilmtk.dataset_converters.convert_ideal should be used instead (not checked)
 
 
 DAY_IN_SEC = 60 * 60 * 24
 WEEK_IN_SEC = 7 * DAY_IN_SEC
 MONTH_IN_SEC = 30 * DAY_IN_SEC
+PEAK_POWER_CONSUMPTION = 700
 
 DATASET_NAMES = ['redd', 'ideal']
 
@@ -19,6 +22,8 @@ PERIODS_PATH = '../data/periods_storage/'
 POWER_PERIODS_PATH = '../data/power_periods_storage/'
 
 EXP_RESULTS_PATH = '../exp_results/'
+ACCUMULATED_SHEET = 'accumulated_distance'
+POWER_SHEET = 'power_distance'
 
 
 class DatasetType(enum.Enum):
