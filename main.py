@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('processes', type=int, nargs='?', default=1)
     args = parser.parse_args()
 
+    by_resource_delta = True
     if args.experiment == 'accum':
         experiment_func = run_experiment_accum
         experiment_name = 'run_experiment_accum'
@@ -54,7 +55,8 @@ if __name__ == '__main__':
             TIME_DELTAS[args.time_delta_idx],
             f'{args.experiment}_{args.dataset}_td{TIME_DELTAS[args.time_delta_idx]}_dur_gap{args.dur_gap_start}-{args.dur_gap_end}.xlsx',
             slice(args.dur_gap_start, args.dur_gap_end),
-            args.processes
+            args.processes,
+            by_resource_delta
         )
 
 
