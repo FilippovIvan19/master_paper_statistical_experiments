@@ -18,4 +18,5 @@ clean_and_store_data(DS)
 
 # was used to get stable periods, interpolate gaps and store
 # data in power and accumulated formats
+# it takes some time for computations to complete
 process_stable_periods(DS, DURATION, MAX_GAP)
